@@ -251,11 +251,134 @@ def get_ring_capacity(radius, spacing=17.5):
 
 pygame.init()
 
+USERNAME = ""
 CURSOR_CLICK_EVENT = pygame.USEREVENT + 1
 #pygame.time.set_timer(CURSOR_CLICK_EVENT, 5000) 
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((1250,650))
-state = GAME_STATE.load()
+
+title_img = pygame.image.load("images/cookie clicker title.png")
+scale_title = pygame.transform.scale(title_img,(1250, 650)).convert_alpha()
+title_rect = scale_title.get_rect()
+title_rect.center = (625, 325)
+a = 255
+title_time = 300
+
+#setup text input
+input_screen = True
+input_active = True
+input_value = ""
+
+#button rects
+confirm_btn = pygame.Rect(450,370,110,45)
+random_btn = pygame.Rect(570,370,110,45)
+cancel_btn = pygame.Rect(690,370,110,45)
+
+input_title_font = pygame.font.SysFont("Georgia", 35, bold=True)
+input_title_text = input_title_font.render("Name Your Bakery", True, pygame.Color(232,221,167))
+input_title_shadow = input_title_font.render("Name Your Bakery", True, pygame.Color(74,45,21))
+input_title_text_rect = input_title_text.get_rect(center = (625,175))
+input_title_shadow_rect = input_title_shadow.get_rect(center = (627,178))
+
+input_font = pygame.font.SysFont("Arial", 30)
+input_prompt = input_font.render("Enter your username", True, pygame.Color(255,255,255))
+input_prompt_rect = input_prompt.get_rect(center = (625, 225))
+
+button_font = pygame.font.SysFont("Arial", 25)
+confirm_text = button_font.render("Confirm", True, pygame.Color(255,255,255))
+random_text = button_font.render("Random", True, pygame.Color(255,255,255))
+cancel_text = button_font.render("Cancel", True, pygame.Color(255,255,255))
+confirm_text_rect = confirm_text.get_rect(center = (505, 392))
+random_text_rect = random_text.get_rect(center = (625, 392))
+cancel_text_rect = cancel_text.get_rect(center = (745, 392))
+
+bakery_left = pygame.image.load("images/bakery-left.png")
+bakery_left_rect = bakery_left.get_rect(center = (415, 175))
+bakery_right = pygame.image.load("images/bakery-right.png")
+bakery_right_rect = bakery_right.get_rect(center = (835, 178))
+
+
+#Splash screen
+while a >=0:
+    scale_title.set_alpha(a)
+    screen.fill((29, 71, 106))
+
+    screen.blit(scale_title, title_rect)
+    a-=2
+    clock.tick(60)
+    pygame.display.update()
+
+#Username input
+
+while input_screen:
+    screen.fill(pygame.Color(29, 71, 106))
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            print(pos)
+            if confirm_btn.collidepoint(pos):
+                USERNAME = input_value
+                input_screen = False
+                print(f"retrieving save data for {USERNAME}")
+            elif random_btn.collidepoint(pos):
+                print("random is not implemented yet!")
+            elif cancel_btn.collidepoint(pos):
+                pygame.quit()
+                print("closing pygame")
+        if event.type == pygame.KEYDOWN and input_active:
+            if event.key == pygame.K_RETURN:
+                print("User input:", input_text)
+                input_value = ""
+            elif event.key == pygame.K_BACKSPACE:
+                input_value = input_value[:-1]
+            else:
+                input_value += event.unicode
+                print(input_value)
+        
+
+
+    #container
+    pygame.draw.rect(screen,(25, 25, 25),[325,125,600,350],0)
+    pygame.draw.rect(screen,(215, 174, 137),[325,125,600,350],5)
+    pygame.draw.line(screen,(115, 68, 29),[923,125],[923,473],2)
+    pygame.draw.line(screen,(115, 68, 29),[924,473],[325,473],2)
+
+    screen.blit(input_title_shadow, input_title_shadow_rect)
+    screen.blit(input_title_text, input_title_text_rect)
+    screen.blit(bakery_left, bakery_left_rect)
+    screen.blit(bakery_right, bakery_right_rect)
+    screen.blit(input_prompt, input_prompt_rect)
+
+
+    #input
+    pygame.draw.rect(screen,(255, 255, 255),[400,285,450,45],width = 0, border_radius=5)
+    pygame.draw.rect(screen,(215, 174, 137),[400,285,450,45],width = 2, border_radius=5)
+
+    input_text = input_font.render(input_value, True, pygame.Color(0,0,0))
+    screen.blit(input_text, (410, 290))
+
+    #buttons
+    pygame.draw.rect(screen,(25, 25, 25),[450,370,110,45],0, border_radius=3)
+    pygame.draw.rect(screen,(215, 174, 137),[450,370,110,45],2, border_radius=3)
+
+    pygame.draw.rect(screen,(25, 25, 25),[570,370,110,45],0, border_radius=3)
+    pygame.draw.rect(screen,(215, 174, 137),[570,370,110,45],2, border_radius=3)
+
+    pygame.draw.rect(screen,(25, 25, 25),[690,370,110,45],0, border_radius=3)
+    pygame.draw.rect(screen,(215, 174, 137),[690,370,110,45],2, border_radius=3)
+
+    screen.blit(confirm_text, confirm_text_rect)
+    screen.blit(random_text, random_text_rect)
+    screen.blit(cancel_text, cancel_text_rect)
+
+    pygame.display.update()
+
+
+
+state = GAME_STATE.load(f"{USERNAME}_savefile.txt")
 
 cookie = pygame.image.load("images/PerfectCookie.png")
 big_cookie = pygame.transform.scale_by(cookie,(1.25,1.25))
@@ -269,7 +392,8 @@ cursor_capacity = 50#get_ring_capacity(140)
 font = pygame.font.SysFont("Georgia", 35, bold=True)
 small_font = pygame.font.SysFont("Georgia", 15, bold=True)
 mid_font = pygame.font.SysFont("Georgia", 25, bold=True)
-bakery_text = mid_font.render("Coach Katie's bakery", True, pygame.Color(255,255,255))
+bakery_text = mid_font.render(f"{USERNAME}'s bakery", True, pygame.Color(255,255,255))
+bakery_text_rect = bakery_text.get_rect(center = (190,35))
 store_text = font.render("Store", True, pygame.Color(255,255,255))
 
 cookie_text = font.render(str(math.floor(state.cookies)), True, pygame.Color(255,255,255))
@@ -277,14 +401,6 @@ cookie_text_rect = cookie_text.get_rect(center = (190,70))
 
 text_surface = pygame.Surface((380, 100), pygame.SRCALPHA)
 text_surface.fill((0, 0, 0, 128))
-
-title_img = pygame.image.load("images/cookie clicker title.png")
-scale_title = pygame.transform.scale(title_img,(1250, 650)).convert_alpha()
-
-title_rect = scale_title.get_rect()
-title_rect.center = (625, 325)
-a = 255
-title_time = 300
 
 shop_item_y = 140
 state.shop_items += [Cursor_shop(state), Grandma_shop(state)]
@@ -295,18 +411,11 @@ for item in state.shop_items:
     item.set_rect()
     shop_item_y += 65
 
-while a >=0:
-    scale_title.set_alpha(a)
-    screen.fill((29, 71, 106))
-
-    screen.blit(scale_title, title_rect)
-    a-=2
-    clock.tick(60)
-    pygame.display.update()
+#Main game
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            state.save()
+            state.save(f"{USERNAME}_savefile.txt")
             pygame.quit()
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
@@ -336,11 +445,12 @@ while True:
                             c = state.cursors[-1].copy()
                             state.cursors.append(c)
                     shop.amount += 1
+                    shop.cost = math.ceil(shop.cost * 1.15)
                     state.cookies -= shop.cost
                     cookie_text = font.render(str(math.floor(state.cookies)), True, pygame.Color(255,255,255))
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:
-                state.save()
+                state.save(f"{USERNAME}_savefile.txt")
         if event.type == CURSOR_CLICK_EVENT:
             state.cookies += state.cursors[0].cps
             state.total_cookies += state.cursors[0].cps
@@ -355,7 +465,7 @@ while True:
     screen.blit(text_surface, (0, 15))
     
     screen.blit(big_cookie, cookie_rect)
-    screen.blit(bakery_text, (50,25))
+    screen.blit(bakery_text, bakery_text_rect)
     screen.blit(cookie_text, cookie_text_rect)
     screen.blit(store_text, (1050,25))
     pygame.draw.rect(screen,(66, 38, 27),[380,0,15,650],0)
